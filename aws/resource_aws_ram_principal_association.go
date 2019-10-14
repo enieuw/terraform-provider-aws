@@ -40,6 +40,8 @@ func resourceAwsRamPrincipalAssociation() *schema.Resource {
 				ValidateFunc: validation.Any(
 					validateAwsAccountId,
 					validateArn,
+					validateOrganizationId,
+					validateOrganizationOu,
 				),
 			},
 		},

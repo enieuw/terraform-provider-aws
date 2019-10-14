@@ -2,11 +2,12 @@ package aws
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/cognitoidentity"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/service/cognitoidentity"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 )
 
 func TestValidateTypeStringNullableBoolean(t *testing.T) {
@@ -2951,6 +2952,57 @@ func TestValidateRoute53ResolverName(t *testing.T) {
 		_, errors := validateRoute53ResolverName(tc.Value, "aws_route53_resolver_endpoint")
 		if len(errors) != tc.ErrCount {
 			t.Fatalf("Expected the AWS Route 53 Resolver Endpoint Name to not trigger a validation error for %q", tc.Value)
+		}
+	}
+}
+
+func TestValidateAwsAccountOu(t *testing.T) {
+	validNames := []string{
+		"ou-a1b2-a1b2bc3d4",
+		"ou-aaaaaaaaaaaa-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	}
+	for _, v := range validNames {
+		_, errors := validateOrganizationOu(v, "organization_ou_id")
+		if len(errors) != 0 {
+			t.Fatalf("%q should be a valid AWS Organization OU ID: %q", v, errors)
+		}
+	}
+
+	invalidNames := []string{
+		"ou-1-2", // too short
+		"invalid",
+		"OU-ALLCAPS-WRONG",
+	}
+	for _, v := range invalidNames {
+		_, errors := validateOrganizationOu(v, "organization_ou_id")
+		if len(errors) == 0 {
+			t.Fatalf("%q should be an invalid AWS Organization ID", v)
+		}
+	}
+}
+
+func TestValidateAwsAccountId(t *testing.T) {
+	validNames := []string{
+		"o-a1b2bc3d4e5d6",
+		"o-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	}
+	for _, v := range validNames {
+		_, errors := validateOrganizationId(v, "organization_id")
+		if len(errors) != 0 {
+			t.Fatalf("%q should be a valid AWS Organization OU ID: %q", v, errors)
+		}
+	}
+
+	invalidNames := []string{
+		"o-1234567", // too short
+		"o-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", // too long
+		"invalid",
+		"O-ALLCAPS",
+	}
+	for _, v := range invalidNames {
+		_, errors := validateOrganizationId(v, "organization_id")
+		if len(errors) == 0 {
+			t.Fatalf("%q should be an invalid AWS Organization ID", v)
 		}
 	}
 }
